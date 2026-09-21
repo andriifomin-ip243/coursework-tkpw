@@ -1,21 +1,21 @@
-import HomePage from './pages/HomePage.jsx';
+import AppLayout from './components/layout/AppLayout.jsx'
+import HomePage from './pages/HomePage.jsx'
+import OrderPage from './pages/OrderPage.jsx'
+import { apparelItems } from './data/items.js'
+
+const navLinks = [
+  { href: '#about', label: 'Про бренд' },
+  { href: '#catalog', label: 'Каталог' },
+  { href: '#order', label: 'Замовлення' },
+]
 
 export default function App() {
+  const featuredItem = apparelItems[0]
+
   return (
-    <div className="app-container">
-      <header className="site-header">
-        <div className="logo">MERA APPAREL</div>
-        <nav>
-          <a href="#about">Про бренд</a>
-          <a href="#catalog">Каталог</a>
-        </nav>
-      </header>
-
+    <AppLayout title="MERA Apparel" links={navLinks}>
       <HomePage />
-
-      <footer className="site-footer">
-        <p>© 2026 MERA. Навчальний проєкт з ТКПЗ.</p>
-      </footer>
-    </div>
-  );
+      <OrderPage item={featuredItem} />
+    </AppLayout>
+  )
 }

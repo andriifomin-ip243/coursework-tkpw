@@ -1,30 +1,25 @@
-import ProductCard from '../components/ProductCard.jsx';
-import { apparelItems } from '../data/items.js';
+import { apparelItems } from '../data/items.js'
+import Section from '../components/ui/Section.jsx'
+import CatalogSummary from '../components/catalog/CatalogSummary.jsx'
+import ProductList from '../components/catalog/ProductList.jsx'
 
 export default function HomePage() {
   return (
-    <main>
-      <section id="about">
-        <h2>Концепція бренду</h2>
+    <>
+      <Section id="about" title="Про бренд MERA">
         <p>
-          MERA — локальний бренд авторського одягу з лімітованими дропами та акцентом на естетику гравюр і міфології.
+          MERA — це авторський streetwear-одяг обмеженого тиражу (дропи футболок та худі)
+          з унікальною естетикою та якісним шовкотрафаретним друком.
         </p>
-      </section>
+        <p>
+          Ознайомтеся з актуальними моделями нижче та виберіть річ для оформлення заявки на передзамовлення.
+        </p>
+      </Section>
 
-      <section id="catalog">
-        <h2>Каталог дропів</h2>
-        <p>Всього позицій у релізі: {apparelItems.length}</p>
-
-        {apparelItems.length === 0 ? (
-          <p className="empty-message">Наразі немає активних товарів у каталозі.</p>
-        ) : (
-          <ul className="product-grid">
-            {apparelItems.map((item) => (
-              <ProductCard key={item.id} item={item} />
-            ))}
-          </ul>
-        )}
-      </section>
-    </main>
-  );
+      <Section id="catalog" title="Каталог дропів">
+        <CatalogSummary total={apparelItems.length} />
+        <ProductList items={apparelItems} />
+      </Section>
+    </>
+  )
 }
