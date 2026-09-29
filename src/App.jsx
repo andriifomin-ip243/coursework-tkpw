@@ -1,6 +1,7 @@
 import AppLayout from './components/layout/AppLayout.jsx'
-import HomePage from './pages/HomePage.jsx'
-import OrderPage from './pages/OrderPage.jsx'
+import ProductSelectionProvider from './providers/ProductSelectionProvider.jsx'
+import CatalogContainer from './pages/CatalogContainer.jsx'
+import RequestContainer from './pages/RequestContainer.jsx'
 import { apparelItems } from './data/items.js'
 
 const navLinks = [
@@ -10,12 +11,12 @@ const navLinks = [
 ]
 
 export default function App() {
-  const featuredItem = apparelItems[0]
-
   return (
     <AppLayout title="MERA Apparel" links={navLinks}>
-      <HomePage />
-      <OrderPage item={featuredItem} />
+      <ProductSelectionProvider items={apparelItems}>
+        <CatalogContainer items={apparelItems} />
+        <RequestContainer />
+      </ProductSelectionProvider>
     </AppLayout>
   )
 }

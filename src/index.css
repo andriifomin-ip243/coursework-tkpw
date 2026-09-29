@@ -233,3 +233,115 @@ section {
 .order-item-summary {
   margin-bottom: 16px;
 }
+
+/* --- Стилі для стану та взаємодії (Лабораторна 2.1) --- */
+
+.catalog-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-block: 1.5rem;
+  padding: 1rem;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.catalog-filters .form-field {
+  margin-bottom: 0;
+  flex: 1 1 250px;
+}
+
+.checkbox-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-block: 0.5rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+  user-select: none;
+}
+
+.checkbox-field input[type="checkbox"] {
+  width: auto;
+  cursor: pointer;
+}
+
+.catalog-count-info {
+  font-size: 0.95rem;
+  color: #475569;
+  margin-bottom: 1rem;
+}
+
+.selection-note {
+  font-weight: 600;
+  color: #0f766e;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.product-card-selected {
+  border-color: #0f766e;
+  background-color: #f0fdfa;
+}
+
+button[aria-pressed="true"] {
+  outline: 2px solid #0f766e;
+  outline-offset: 2px;
+}
+
+.order-content-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  margin-block: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .order-content-layout {
+    grid-template-columns: 1.2fr 1fr;
+  }
+}
+
+.order-summary {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.order-summary h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.15rem;
+}
+
+.order-summary dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5rem 1rem;
+  margin: 0 0 1rem 0;
+}
+
+.order-summary dt {
+  font-weight: 600;
+  color: #334155;
+}
+
+.order-summary dd {
+  margin: 0;
+  color: #0f172a;
+}
+
+.summary-disclaimer {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin: 0;
+  border-top: 1px dashed #cbd5e1;
+  padding-top: 0.75rem;
+}
+
+.order-actions {
+  margin-top: 1.5rem;
+}
