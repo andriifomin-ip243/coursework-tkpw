@@ -1,17 +1,30 @@
+import { Outlet } from 'react-router'
 import SiteHeader from './SiteHeader.jsx'
+import ProductSelectionProvider from '../../providers/ProductSelectionProvider.jsx'
+import { apparelItems } from '../../data/items.js'
 
-export default function AppLayout({ title, links, children }) {
+const navigationLinks = [
+  { to: '/', label: 'Головна', end: true },
+  { to: '/catalog', label: 'Каталог' },
+  { to: '/orders', label: 'Передзамовлення' },
+]
+
+export default function AppLayout() {
   return (
-    <div className="app-wrapper">
-      <a className="skip-link" href="#main-content">
+    <div className="app-layout">
+      <a href="#main-content" className="skip-link">
         Перейти до вмісту
       </a>
-      <SiteHeader title={title} links={links} />
-      <main id="main-content" tabIndex={-1} className="main-content">
-        {children}
+      <SiteHeader title="MERA Apparel" links={navigationLinks} />
+
+      <main id="main-content" className="site-main">
+        <ProductSelectionProvider items={apparelItems}>
+          <Outlet />
+        </ProductSelectionProvider>
       </main>
+
       <footer className="site-footer">
-        <p>© 2026 MERA Apparel. Навчальний курсовий проєкт магазину авторського одягу.</p>
+        <p>© 2026 MERA Apparel. Авторський streetwear обмеженого тиражу.</p>
       </footer>
     </div>
   )

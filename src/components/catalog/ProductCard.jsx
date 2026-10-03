@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router'
 import ProductStatusBadge from './ProductStatusBadge.jsx'
 import AppButton from '../ui/AppButton.jsx'
 
@@ -13,7 +14,11 @@ export default function ProductCard({ item, selected, onSelect }) {
         <ProductStatusBadge status={item.status} statusLabel={item.statusLabel} />
       </div>
 
-      <h3>{item.name}</h3>
+      <h3>
+        <Link to={`/catalog/${item.id}`} className="product-title-link">
+          {item.name}
+        </Link>
+      </h3>
 
       <AppButton
         variant="secondary"

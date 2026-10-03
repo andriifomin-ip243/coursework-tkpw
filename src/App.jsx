@@ -1,22 +1,32 @@
+import { Route, Routes } from 'react-router'
 import AppLayout from './components/layout/AppLayout.jsx'
-import ProductSelectionProvider from './providers/ProductSelectionProvider.jsx'
+import OrdersLayout from './components/layout/OrdersLayout.jsx'
+import HomePage from './pages/HomePage.jsx'
 import CatalogContainer from './pages/CatalogContainer.jsx'
-import RequestContainer from './pages/RequestContainer.jsx'
+import ProductDetailsPage from './pages/ProductDetailsPage.jsx'
+import OrdersPage from './pages/OrdersPage.jsx'
+import OrderCreatePage from './pages/OrderCreatePage.jsx'
+import OrderEditPage from './pages/OrderEditPage.jsx'
+import NotFoundPage from './pages/NotFoundPage.jsx'
 import { apparelItems } from './data/items.js'
-
-const navLinks = [
-  { href: '#about', label: 'Про бренд' },
-  { href: '#catalog', label: 'Каталог' },
-  { href: '#order', label: 'Замовлення' },
-]
+import { initialOrders } from './data/orders.js'
 
 export default function App() {
   return (
-    <AppLayout title="MERA Apparel" links={navLinks}>
-      <ProductSelectionProvider items={apparelItems}>
-        <CatalogContainer items={apparelItems} />
-        <RequestContainer />
-      </ProductSelectionProvider>
-    </AppLayout>
+    <Routes>
+      <Route element={<AppLayout />}>
+        <Route index element={<HomePage />} />
+        <Route path="catalog">
+          <Route index element={<CatalogContainer items={apparelItems} />} />
+          <Route path=":productId" element={<ProductDetailsPage items={apparelItems} />} />
+        </Route>
+        <Route path="orders" element={<OrdersLayout />}>
+          <Route index element={<OrdersPage orders={initialOrders} items={apparelItems} />} />
+          <Route path="new" element={<OrderCreatePage items={apparelItems} />} />
+          <Route path=":orderId/edit" element={<OrderEditPage orders={initialOrders} items={apparelItems} />} />
+        </Route>
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
+    </Routes>
   )
 }
