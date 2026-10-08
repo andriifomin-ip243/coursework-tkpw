@@ -22,7 +22,7 @@ export default function CatalogPage({ items, selectedId, onSelect }) {
 
   return (
     <>
-      <PageHeading title="Каталог дропів MERA" />
+      <PageHeading title="Каталог речей MERA" />
 
       <Section id="catalog" title="Доступні колекції">
         <CatalogSummary total={items.length} />
@@ -42,7 +42,7 @@ export default function CatalogPage({ items, selectedId, onSelect }) {
           onSelect={onSelect}
           emptyTitle={
             items.length === 0
-              ? 'Дропи ще не додано.'
+              ? 'Товари ще не додано.'
               : 'За цими фільтрами нічого не знайдено.'
           }
         />

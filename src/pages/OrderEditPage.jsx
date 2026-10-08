@@ -1,38 +1,33 @@
 import { useNavigate, useParams } from 'react-router'
+import useOrders from '../hooks/useOrders.js'
 import OrderPage from './OrderPage.jsx'
 import NotFoundPage from './NotFoundPage.jsx'
 
-export default function OrderEditPage({ orders, items }) {
+export default function OrderEditPage({ items }) {
   const { orderId } = useParams()
   const navigate = useNavigate()
+  const { orders, updateOrder } = useOrders()
 
   const order = orders.find((entry) => entry.id === orderId)
 
   if (!order) {
-    return (
-      <NotFoundPage
-        title="404: Заявку не знайдено"
-        message="Запитувана чернетка передзамовлення відсутня серед збережених записів."
-      />
-    )
+    return <NotFoundPage title="404: Заявку для редагування не знайдено" />
   }
 
   const item = items.find((entry) => entry.id === order.productId)
 
   if (!item) {
-    return (
-      <NotFoundPage
-        title="404: Дроп вилучено"
-        message="Річ, прив'язана до цієї заявки, більше не доступна в каталозі."
-      />
-    )
+    return <NotFoundPage title="404: Річ вилучено з каталогу" />
   }
 
-  const initialDraft = {
-    size: order.size,
-    contact: order.contact,
-    giftPackaging: order.giftPackaging,
-    comment: order.comment,
+  function handleSave(input) {
+    const result = updateOrder(order.id, input)
+    if (result.ok) {
+      navigate(`/orders/${encodeURIComponent(result.record.id)}`, {
+        replace: true,
+      })
+    }
+    return result
   }
 
   return (
@@ -40,9 +35,16 @@ export default function OrderEditPage({ orders, items }) {
       key={`edit-${order.id}`}
       title={`Редагування заявки ${order.id}`}
       item={item}
-      initialDraft={initialDraft}
-      onCancel={() => navigate('/orders')}
-      cancelLabel="Повернутися до списку заявок"
+      initialDraft={{
+        contact: order.contact,
+        quantity: order.quantity,
+        giftPackaging: order.giftPackaging,
+        comment: order.comment,
+      }}
+      onSave={handleSave}
+      submitLabel="Зберегти зміни"
+      onCancel={() => navigate(`/orders/${encodeURIComponent(order.id)}`)}
+      cancelLabel="Скасувати редагування"
     />
   )
 }

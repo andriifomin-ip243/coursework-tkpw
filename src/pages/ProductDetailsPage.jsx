@@ -15,8 +15,8 @@ export default function ProductDetailsPage({ items }) {
   if (!item) {
     return (
       <NotFoundPage
-        title="404: Дроп не знайдено"
-        message="Запитуваний дроп відсутній у каталозі MERA або тираж було завершено."
+        title="404: Річ не знайдено"
+        message="Запитуваний товар відсутній у каталозі MERA або тираж було завершено."
       />
     )
   }

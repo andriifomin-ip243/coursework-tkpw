@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router'
 import SiteHeader from './SiteHeader.jsx'
 import ProductSelectionProvider from '../../providers/ProductSelectionProvider.jsx'
+import OrdersProvider from '../../providers/OrdersProvider.jsx'
 import { apparelItems } from '../../data/items.js'
 
 const navigationLinks = [
@@ -17,9 +18,11 @@ export default function AppLayout() {
       </a>
       <SiteHeader title="MERA Apparel" links={navigationLinks} />
 
-      <main id="main-content" className="site-main">
+      <main id="main-content" className="site-main" tabIndex={-1}>
         <ProductSelectionProvider items={apparelItems}>
-          <Outlet />
+          <OrdersProvider items={apparelItems}>
+            <Outlet />
+          </OrdersProvider>
         </ProductSelectionProvider>
       </main>
 

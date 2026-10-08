@@ -6,10 +6,10 @@ import CatalogContainer from './pages/CatalogContainer.jsx'
 import ProductDetailsPage from './pages/ProductDetailsPage.jsx'
 import OrdersPage from './pages/OrdersPage.jsx'
 import OrderCreatePage from './pages/OrderCreatePage.jsx'
+import OrderDetailsPage from './pages/OrderDetailsPage.jsx'
 import OrderEditPage from './pages/OrderEditPage.jsx'
 import NotFoundPage from './pages/NotFoundPage.jsx'
 import { apparelItems } from './data/items.js'
-import { initialOrders } from './data/orders.js'
 
 export default function App() {
   return (
@@ -21,9 +21,10 @@ export default function App() {
           <Route path=":productId" element={<ProductDetailsPage items={apparelItems} />} />
         </Route>
         <Route path="orders" element={<OrdersLayout />}>
-          <Route index element={<OrdersPage orders={initialOrders} items={apparelItems} />} />
+          <Route index element={<OrdersPage items={apparelItems} />} />
           <Route path="new" element={<OrderCreatePage items={apparelItems} />} />
-          <Route path=":orderId/edit" element={<OrderEditPage orders={initialOrders} items={apparelItems} />} />
+          <Route path=":orderId" element={<OrderDetailsPage items={apparelItems} />} />
+          <Route path=":orderId/edit" element={<OrderEditPage items={apparelItems} />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />
       </Route>

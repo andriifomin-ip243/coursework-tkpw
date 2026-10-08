@@ -3,7 +3,7 @@ import PageHeading from '../components/ui/PageHeading.jsx'
 
 export default function NotFoundPage({
   title = '404: сторінку не знайдено',
-  message = 'Перевірте правильність адреси або поверніться до каталогу дропів.',
+  message = 'Перевірте правильність адреси або поверніться до каталогу речей.',
 }) {
   return (
     <div className="not-found-page">

@@ -482,3 +482,104 @@ button[aria-pressed="true"] {
 .product-title-link:hover {
   text-decoration: underline;
 }
+
+/* --- Стилі валідації та операцій CRUD (Лабораторна 3.1) --- */
+.field-error {
+  color: #9c1c24;
+  margin: 0.25rem 0 0;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+[aria-invalid="true"] {
+  border-color: #9c1c24 !important;
+  background-color: #fff8f8;
+}
+
+.form-field select,
+.order-filters select {
+  width: 100%;
+  padding: 0.625rem;
+  border: 1px solid #687d8d;
+  border-radius: 0.375rem;
+  font: inherit;
+}
+
+select:focus-visible {
+  outline: 3px solid #075a94;
+  outline-offset: 2px;
+}
+
+.operation-notice {
+  margin-block: 1rem;
+  padding: 0.75rem 1rem;
+  background-color: #e8f4fd;
+  border-left: 4px solid #075a94;
+  border-radius: 0.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.operation-notice p:empty {
+  margin: 0;
+  display: none;
+}
+
+.orders-section-layout .operation-notice:has(p:empty) {
+  display: none;
+}
+
+.requests-table td,
+main h1 {
+  overflow-wrap: anywhere;
+}
+
+.order-table-comment {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.table-actions-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.table-link {
+  font-size: 0.9rem;
+  text-decoration: underline;
+}
+
+.order-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #fdfdfd;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+}
+
+.filter-actions {
+  display: flex;
+  align-items: flex-end;
+}
+
+.order-details-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  margin-top: 1rem;
+}
+
+.order-details-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}

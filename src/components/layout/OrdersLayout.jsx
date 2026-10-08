@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router'
+import OrderNotice from '../orders/OrderNotice.jsx'
 
 export default function OrdersLayout() {
   return (
@@ -28,6 +29,9 @@ export default function OrdersLayout() {
           </li>
         </ul>
       </nav>
+
+      <p className="field-hint">Локальні дані зберігаються в пам'яті до перезавантаження сторінки.</p>
+      <OrderNotice />
 
       <Outlet />
     </div>

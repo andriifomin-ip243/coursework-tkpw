@@ -1,28 +1,19 @@
-export default function OrderSummary({ productName, price, draft }) {
-  const size = draft.size.trim()
-  const contact = draft.contact.trim()
-  const comment = draft.comment.trim()
-
+export default function OrderSummary({ productName, draft }) {
   return (
-    <aside aria-labelledby="order-summary-title" className="order-summary">
-      <h3 id="order-summary-title">Поточна чернетка передзамовлення</h3>
+    <div className="order-summary-card">
+      <h3>Підсумок чернетки</h3>
       <dl>
-        <dt>Вибраний дроп:</dt>
-        <dd>{productName} ({price} грн)</dd>
-
-        <dt>Розмір:</dt>
-        <dd>{size || 'Не вказано'}</dd>
-
-        <dt>Контакт для звʼязку:</dt>
-        <dd>{contact || 'Не вказано'}</dd>
-
-        <dt>Подарункове пакування:</dt>
-        <dd>{draft.giftPackaging ? 'Так (+ крафтове пакування)' : 'Стандартне'}</dd>
-
-        <dt>Коментар:</dt>
-        <dd>{comment || 'Без додаткових побажань'}</dd>
+        <dt>Виріб</dt>
+        <dd>{productName}</dd>
+        <dt>Контакт</dt>
+        <dd>{draft.contact || 'Не вказано'}</dd>
+        <dt>Кількість, шт</dt>
+        <dd>{draft.quantity === '' ? 'Не вказано' : draft.quantity}</dd>
+        <dt>Фірмове пакування</dt>
+        <dd>{draft.giftPackaging ? 'Так' : 'Ні'}</dd>
+        <dt>Коментар / Розмір</dt>
+        <dd>{draft.comment || 'Не заповнено'}</dd>
       </dl>
-      <p className="summary-disclaimer">Цей підсумок фіксує лише стан чернетки в браузері та не є оформленим чеком.</p>
-    </aside>
+    </div>
   )
 }

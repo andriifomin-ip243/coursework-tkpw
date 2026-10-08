@@ -2,6 +2,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router'
 import PageHeading from '../components/ui/PageHeading.jsx'
 import EmptyState from '../components/ui/EmptyState.jsx'
 import useProductSelection from '../hooks/useProductSelection.js'
+import useOrders from '../hooks/useOrders.js'
 import OrderPage from './OrderPage.jsx'
 import NotFoundPage from './NotFoundPage.jsx'
 
@@ -9,33 +10,21 @@ export default function OrderCreatePage({ items }) {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const { selectedId, clearSelection } = useProductSelection()
+  const { createOrder } = useOrders()
+
   const productId = searchParams.get('productId')
 
   if (productId === null) {
-    const lastSelectionSearch = selectedId
+    const search = selectedId
       ? `?${new URLSearchParams({ productId: selectedId })}`
       : null
 
     return (
       <div className="order-create-empty">
-        <PageHeading title="Створення передзамовлення" />
-        <EmptyState title="Річ для оформлення ще не вибрана">
-          <p>
-            Будь ласка, перейдіть до каталогу та оберіть потрібний дроп.
-          </p>
-          <div className="empty-actions">
-            <Link to="/catalog" className="app-button app-button-primary">
-              Відкрити каталог
-            </Link>
-            {lastSelectionSearch && (
-              <Link
-                to={`/orders/new${lastSelectionSearch}`}
-                className="app-button app-button-secondary"
-              >
-                Використати останній вибір із вітрини
-              </Link>
-            )}
-          </div>
+        <PageHeading title="Нова чернетка передзамовлення" />
+        <EmptyState title="Спочатку виберіть річ із каталогу.">
+          <p><Link to="/catalog">Відкрити каталог MERA</Link></p>
+          {search && <p><Link to={search}>Використати останній вибір</Link></p>}
         </EmptyState>
       </div>
     )
@@ -44,12 +33,17 @@ export default function OrderCreatePage({ items }) {
   const item = items.find((entry) => entry.id === productId)
 
   if (!item) {
-    return (
-      <NotFoundPage
-        title="404: Дроп не знайдено"
-        message="Вказаний у посиланні товар відсутній у каталозі."
-      />
-    )
+    return <NotFoundPage title="404: Річ для оформлення не знайдено" />
+  }
+
+  function handleSave(input) {
+    const result = createOrder(input)
+    if (result.ok) {
+      navigate(`/orders/${encodeURIComponent(result.record.id)}`, {
+        replace: true,
+      })
+    }
+    return result
   }
 
   function handleCancel() {
@@ -60,10 +54,12 @@ export default function OrderCreatePage({ items }) {
   return (
     <OrderPage
       key={`new-${item.id}`}
-      title="Нове передзамовлення"
+      title="Нова чернетка передзамовлення"
       item={item}
+      onSave={handleSave}
+      submitLabel="Створити чернетку"
       onCancel={handleCancel}
-      cancelLabel="Скасувати вибір і повернутися до каталогу"
+      cancelLabel="Скасувати й повернутися до каталогу"
     />
   )
 }
