@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, Profiler } from 'react'
 import { Link } from 'react-router'
 import PageHeading from '../components/ui/PageHeading.jsx'
 import EmptyState from '../components/ui/EmptyState.jsx'
@@ -9,6 +9,15 @@ import useOrders from '../hooks/useOrders.js'
 import useOrderFilters from '../hooks/useOrderFilters.js'
 import useDeleteOrder from '../hooks/useDeleteOrder.js'
 import { failNextMockOrder } from '../services/mockOrderService.js'
+
+function reportRender(id, phase, actualDuration, baseDuration) {
+  console.table([{
+    component: id,
+    phase,
+    actualMs: Number(actualDuration.toFixed(2)),
+    baseMs: Number(baseDuration.toFixed(2)),
+  }])
+}
 
 export default function OrdersPage({ items }) {
   const { orders, reload, isMutating } = useOrders()
@@ -92,12 +101,14 @@ export default function OrdersPage({ items }) {
           </AppButton>
         </EmptyState>
       ) : (
-        <OrderTable
-          orders={filters.visibleOrders}
-          items={items}
-          isMutating={isMutating}
-          onDelete={handleDelete}
-        />
+        <Profiler id="OrderTable" onRender={reportRender}>
+          <OrderTable
+            orders={filters.visibleOrders}
+            items={items}
+            isMutating={isMutating}
+            onDelete={handleDelete}
+          />
+        </Profiler>
       )}
     </div>
   )
