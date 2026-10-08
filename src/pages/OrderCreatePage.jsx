@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import PageHeading from '../components/ui/PageHeading.jsx'
 import EmptyState from '../components/ui/EmptyState.jsx'
@@ -11,6 +12,15 @@ export default function OrderCreatePage({ items }) {
   const navigate = useNavigate()
   const { selectedId, clearSelection } = useProductSelection()
   const { createOrder } = useOrders()
+
+  const pageAlive = useRef(false)
+
+  useEffect(() => {
+    pageAlive.current = true
+    return () => {
+      pageAlive.current = false
+    }
+  }, [])
 
   const productId = searchParams.get('productId')
 
@@ -36,9 +46,9 @@ export default function OrderCreatePage({ items }) {
     return <NotFoundPage title="404: Річ для оформлення не знайдено" />
   }
 
-  function handleSave(input) {
-    const result = createOrder(input)
-    if (result.ok) {
+  async function handleSave(input) {
+    const result = await createOrder(input)
+    if (result.ok && pageAlive.current) {
       navigate(`/orders/${encodeURIComponent(result.record.id)}`, {
         replace: true,
       })

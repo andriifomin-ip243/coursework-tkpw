@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import PageHeading from '../components/ui/PageHeading.jsx'
 import AppButton from '../components/ui/AppButton.jsx'
@@ -9,9 +9,26 @@ import NotFoundPage from './NotFoundPage.jsx'
 export default function OrderDetailsPage({ items }) {
   const { orderId } = useParams()
   const navigate = useNavigate()
-  const { orders } = useOrders()
+  const { orders, isMutating } = useOrders()
   const deleteWithConfirmation = useDeleteOrder(items)
   const [error, setError] = useState('')
+
+  const pageAlive = useRef(false)
+  const activeId = useRef(orderId)
+
+  useEffect(() => {
+    pageAlive.current = true
+    return () => {
+      pageAlive.current = false
+    }
+  }, [])
+
+  useEffect(() => {
+    activeId.current = orderId
+    return () => {
+      activeId.current = null
+    }
+  }, [orderId])
 
   const order = orders.find((entry) => entry.id === orderId)
 
@@ -21,9 +38,12 @@ export default function OrderDetailsPage({ items }) {
 
   const item = items.find((entry) => entry.id === order.productId)
 
-  function handleDelete() {
+  async function handleDelete() {
+    if (isMutating) return
     setError('')
-    const result = deleteWithConfirmation(order)
+    const result = await deleteWithConfirmation(order)
+    if (!pageAlive.current || activeId.current !== order.id) return
+
     if (result.ok) {
       navigate('/orders', { replace: true })
     } else if (!result.cancelled) {
@@ -55,19 +75,20 @@ export default function OrderDetailsPage({ items }) {
         </dl>
 
         <p className="field-hint">
-          Збережена чернетка фіксує ваш запит у локальній пам’яті браузера до перезавантаження.
+          {isMutating ? 'Опрацювання зміни…' : 'Дані синхронізовано з обраним сервісом.'}
         </p>
 
         <div className="order-details-actions">
           <Link
             to={`/orders/${encodeURIComponent(order.id)}/edit`}
-            className="app-button app-button-primary"
+            className={`app-button app-button-primary ${isMutating ? 'disabled' : ''}`}
+            aria-disabled={isMutating}
           >
             Редагувати заявку
           </Link>
 
-          <AppButton variant="secondary" onClick={handleDelete}>
-            Видалити заявку
+          <AppButton variant="secondary" onClick={handleDelete} disabled={isMutating}>
+            {isMutating ? 'Видалення…' : 'Видалити заявку'}
           </AppButton>
 
           <Link to="/orders" className="app-button app-button-secondary">

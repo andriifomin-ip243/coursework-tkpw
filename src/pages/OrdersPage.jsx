@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import PageHeading from '../components/ui/PageHeading.jsx'
 import EmptyState from '../components/ui/EmptyState.jsx'
@@ -8,16 +8,27 @@ import OrderTable from '../components/orders/OrderTable.jsx'
 import useOrders from '../hooks/useOrders.js'
 import useOrderFilters from '../hooks/useOrderFilters.js'
 import useDeleteOrder from '../hooks/useDeleteOrder.js'
+import { failNextMockOrder } from '../services/mockOrderService.js'
 
 export default function OrdersPage({ items }) {
-  const { orders } = useOrders()
+  const { orders, reload, isMutating } = useOrders()
   const filters = useOrderFilters(orders, items)
   const deleteWithConfirmation = useDeleteOrder(items)
   const [error, setError] = useState('')
 
-  function handleDelete(order) {
+  const pageAlive = useRef(false)
+
+  useEffect(() => {
+    pageAlive.current = true
+    return () => {
+      pageAlive.current = false
+    }
+  }, [])
+
+  async function handleDelete(order) {
     setError('')
-    const result = deleteWithConfirmation(order)
+    const result = await deleteWithConfirmation(order)
+    if (!pageAlive.current) return
     if (!result.ok && !result.cancelled) {
       setError(result.message)
     }
@@ -26,11 +37,28 @@ export default function OrdersPage({ items }) {
   return (
     <div className="orders-page">
       <PageHeading title="Передзамовлення MERA" />
-      <p>
+
+      <div className="orders-top-actions">
         <Link to="new" className="app-button app-button-primary">
           Створити нову чернетку
         </Link>
-      </p>
+        <AppButton variant="secondary" onClick={() => void reload()} disabled={isMutating}>
+          Оновити дані
+        </AppButton>
+
+        {import.meta.env.DEV && import.meta.env.VITE_DATA_SOURCE === 'mock' && (
+          <AppButton
+            variant="secondary"
+            onClick={() => {
+              failNextMockOrder('getAll')
+              void reload()
+            }}
+            disabled={isMutating}
+          >
+            Імітувати відмову читання
+          </AppButton>
+        )}
+      </div>
 
       <OrderFilters
         query={filters.query}
@@ -42,14 +70,17 @@ export default function OrdersPage({ items }) {
         onReset={filters.resetFilters}
       />
 
-      <p className="orders-count-info">
-        Показано заявок: <strong>{filters.visibleOrders.length}</strong> із {orders.length}
-      </p>
+      <div className="orders-status-bar">
+        <p className="orders-count-info">
+          Показано заявок: <strong>{filters.visibleOrders.length}</strong> із {orders.length}
+        </p>
+        {isMutating && <p className="field-hint" role="status">Опрацювання зміни…</p>}
+      </div>
 
       {error && <p role="alert" className="field-error">{error}</p>}
 
       {orders.length === 0 ? (
-        <EmptyState title="У поточній колекції ще немає збережених заявок.">
+        <EmptyState title="У поточному сховищі ще немає збережених заявок.">
           <p>
             <Link to="/catalog">Відкрийте каталог та оберіть річ для замовлення</Link>
           </p>
@@ -64,6 +95,7 @@ export default function OrdersPage({ items }) {
         <OrderTable
           orders={filters.visibleOrders}
           items={items}
+          isMutating={isMutating}
           onDelete={handleDelete}
         />
       )}

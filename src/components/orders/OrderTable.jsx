@@ -1,7 +1,7 @@
 import { Link } from 'react-router'
 import AppButton from '../ui/AppButton.jsx'
 
-export default function OrderTable({ orders, items, onDelete }) {
+export default function OrderTable({ orders, items, isMutating, onDelete }) {
   return (
     <div className="table-scroll">
       <table className="requests-table">
@@ -36,7 +36,11 @@ export default function OrderTable({ orders, items, onDelete }) {
                   <Link to={`${path}/edit`} className="table-link">
                     Редагувати
                   </Link>
-                  <AppButton variant="secondary" onClick={() => onDelete(order)}>
+                  <AppButton
+                    variant="secondary"
+                    onClick={() => onDelete(order)}
+                    disabled={isMutating}
+                  >
                     Видалити
                   </AppButton>
                 </td>

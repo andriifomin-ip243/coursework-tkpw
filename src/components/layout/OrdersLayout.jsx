@@ -1,39 +1,28 @@
-import { NavLink, Outlet } from 'react-router'
-import OrderNotice from '../orders/OrderNotice.jsx'
+import { Outlet } from 'react-router'
+import useOrders from '../../hooks/useOrders.js'
+import OrdersGate from '../orders/OrdersGate.jsx'
 
 export default function OrdersLayout() {
+  const { notice, dismissNotice } = useOrders()
+
   return (
     <div className="orders-section-layout">
-      <nav aria-label="Навігація розділу передзамовлень" className="sub-nav">
-        <ul className="sub-nav-list">
-          <li>
-            <NavLink
-              to="."
-              end
-              className={({ isActive }) => (
-                isActive ? 'sub-nav-link active' : 'sub-nav-link'
-              )}
-            >
-              Список заявок
-            </NavLink>
-          </li>
-          <li>
-            <NavLink
-              to="new"
-              className={({ isActive }) => (
-                isActive ? 'sub-nav-link active' : 'sub-nav-link'
-              )}
-            >
-              Нова чернетка
-            </NavLink>
-          </li>
-        </ul>
-      </nav>
+      {notice && (
+        <aside className="operation-notice" role="status" aria-live="polite">
+          <p>{notice}</p>
+          <button
+            type="button"
+            className="app-button app-button-secondary"
+            onClick={dismissNotice}
+          >
+            Закрити повідомлення
+          </button>
+        </aside>
+      )}
 
-      <p className="field-hint">Локальні дані зберігаються в пам'яті до перезавантаження сторінки.</p>
-      <OrderNotice />
-
-      <Outlet />
+      <OrdersGate>
+        <Outlet />
+      </OrdersGate>
     </div>
   )
 }

@@ -20,7 +20,7 @@ export default function AppLayout() {
 
       <main id="main-content" className="site-main" tabIndex={-1}>
         <ProductSelectionProvider items={apparelItems}>
-          <OrdersProvider items={apparelItems}>
+          <OrdersProvider>
             <Outlet />
           </OrdersProvider>
         </ProductSelectionProvider>
