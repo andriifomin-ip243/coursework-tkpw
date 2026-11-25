@@ -3,7 +3,6 @@ import FormField from '../ui/FormField.jsx'
 
 export default function OrderForm({
   idPrefix,
-  productName,
   draft,
   errors,
   operationError,
@@ -15,9 +14,9 @@ export default function OrderForm({
   submitLabel,
 }) {
   const contactId = `${idPrefix}-contact`
-  const quantityId = `${idPrefix}-quantity`
-  const packagingId = `${idPrefix}-packaging`
-  const commentId = `${idPrefix}-comment`
+  const fullNameId = `${idPrefix}-fullname`
+  const deliveryId = `${idPrefix}-delivery`
+  const paymentId = `${idPrefix}-payment`
   const hasErrors = Object.keys(errors).length > 0
 
   function describedBy(id, error) {
@@ -32,32 +31,46 @@ export default function OrderForm({
       aria-busy={isSubmitting}
     >
       <fieldset disabled={isSubmitting} className="order-form-fieldset">
-        <legend className="visually-hidden">Дані передзамовлення</legend>
-
-        <p><strong>Виріб:</strong> {productName}</p>
-        <p className="field-hint">
-          Збережіть зміни кнопкою нижче. Локальні дані фіксуються в пам'яті браузера після підтвердження.
-        </p>
+        <legend className="visually-hidden">Контактні дані та доставка</legend>
 
         {hasErrors && (
           <p role="alert" className="field-error">
-            Виправте позначені поля перед збереженням.
+            Виправте позначені поля перед підтвердженням.
           </p>
         )}
-        {errors.productId && <p role="alert" className="field-error">{errors.productId}</p>}
         {operationError && <p role="alert" className="field-error">{operationError}</p>}
 
         <FormField
+          id={fullNameId}
+          label="ПІБ отримувача (обов'язково)"
+          hint="Прізвище, Ім'я та По батькові."
+          error={errors.fullName}
+        >
+          <input
+            id={fullNameId}
+            name="fullName"
+            type="text"
+            required
+            value={draft.fullName || ''}
+            onChange={(event) => onChange('fullName', event.target.value)}
+            onBlur={() => onBlur('fullName')}
+            aria-invalid={Boolean(errors.fullName)}
+            aria-describedby={describedBy(fullNameId, errors.fullName)}
+          />
+        </FormField>
+
+        <FormField
           id={contactId}
-          label="Контакт для зв'язку (обов'язково)"
-          hint="Нікнейм у Telegram (@handle) або номер телефону."
+          label="Номер телефону (обов'язково)"
+          hint="Введіть контактний номер для зв'язку."
           error={errors.contact}
         >
           <input
             id={contactId}
             name="contact"
-            type="text"
+            type="tel"
             required
+            placeholder="+380..."
             value={draft.contact}
             onChange={(event) => onChange('contact', event.target.value)}
             onBlur={() => onBlur('contact')}
@@ -67,74 +80,48 @@ export default function OrderForm({
         </FormField>
 
         <FormField
-          id={quantityId}
-          label="Кількість одиниць (обов'язково)"
-          hint="Ціле число від 1 до 5 одиниць в одні руки."
-          error={errors.quantity}
+          id={paymentId}
+          label="Спосіб оплати"
+          hint="Оберіть зручний варіант розрахунку."
         >
-          <input
-            id={quantityId}
-            name="quantity"
-            type="number"
-            min={1}
-            max={5}
-            step={1}
-            required
-            value={draft.quantity}
-            onChange={(event) => onChange('quantity', event.target.value)}
-            onBlur={() => onBlur('quantity')}
-            aria-invalid={Boolean(errors.quantity)}
-            aria-describedby={describedBy(quantityId, errors.quantity)}
-          />
+          <select
+            id={paymentId}
+            name="paymentMethod"
+            value={draft.paymentMethod || ' післяплата'}
+            onChange={(event) => onChange('paymentMethod', event.target.value)}
+            style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid #ccc', background: '#fff' }}
+          >
+            <option value="Накладений платіж (при отриманні)">Накладений платіж (при отриманні)</option>
+            <option value="Повна передоплата на карту">Повна передоплата на карту</option>
+          </select>
         </FormField>
 
-        <div className="form-field">
-          <label className="checkbox-field" htmlFor={packagingId}>
-            <input
-              id={packagingId}
-              name="giftPackaging"
-              type="checkbox"
-              checked={draft.giftPackaging}
-              onChange={(event) => onChange('giftPackaging', event.target.checked)}
-              onBlur={() => onBlur('giftPackaging')}
-              aria-invalid={Boolean(errors.giftPackaging)}
-              aria-describedby={describedBy(packagingId, errors.giftPackaging)}
-            />
-            Фірмове подарункове пакування MERA
-          </label>
-          <p id={`${packagingId}-hint`} className="field-hint">
-            Для замовлень понад 3 одиниці пакування є обов'язковим (безкоштовно).
-          </p>
-          {errors.giftPackaging && (
-            <p id={`${packagingId}-error`} className="field-error">{errors.giftPackaging}</p>
-          )}
-        </div>
-
         <FormField
-          id={commentId}
-          label="Деталі та розмір (обов'язково)"
-          hint="Вкажіть розмір (S/M/L/XL), побажання до крою або місто доставки (від 10 до 300 символів)."
-          error={errors.comment}
+          id={deliveryId}
+          label="Доставка: Місто та відділення Нової Пошти (обов'язково)"
+          hint="Вкажіть місто та номер відділення/поштомату."
+          error={errors.delivery || errors.comment}
         >
           <textarea
-            id={commentId}
+            id={deliveryId}
             name="comment"
             rows={3}
             required
+            placeholder="м. Івано-Франківськ, відділення №1..."
             value={draft.comment}
             onChange={(event) => onChange('comment', event.target.value)}
             onBlur={() => onBlur('comment')}
             aria-invalid={Boolean(errors.comment)}
-            aria-describedby={describedBy(commentId, errors.comment)}
+            aria-describedby={describedBy(deliveryId, errors.comment)}
           />
         </FormField>
 
-        <div className="form-actions">
+        <div className="form-actions" style={{ marginTop: '24px' }}>
           <AppButton type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Збереження передзамовлення…' : submitLabel}
+            {isSubmitting ? 'Обробка замовлення…' : submitLabel}
           </AppButton>
           <AppButton variant="secondary" onClick={onReset} disabled={isSubmitting}>
-            Відновити початкові поля
+            Очистити поля
           </AppButton>
         </div>
       </fieldset>

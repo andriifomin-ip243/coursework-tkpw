@@ -81,18 +81,18 @@ export const mockOrderService = {
     return findRecord(read(), id)
   },
 
-  async create(input) {
+  async create(input, { signal } = {}) {
     const value = toOrderInput(input)
-    await before('create')
+    await before('create', signal)
     const records = read()
     const record = { ...value, id: `ord-${crypto.randomUUID().slice(0, 8)}` }
     write([...records, record])
     return { ...record }
   },
 
-  async update(id, input) {
+  async update(id, input, { signal } = {}) {
     const value = toOrderInput(input)
-    await before('update')
+    await before('update', signal)
     const records = read()
     findRecord(records, id)
     const record = { ...value, id }
@@ -100,8 +100,8 @@ export const mockOrderService = {
     return { ...record }
   },
 
-  async delete(id) {
-    await before('delete')
+  async delete(id, { signal } = {}) {
+    await before('delete', signal)
     const records = read()
     findRecord(records, id)
     write(records.filter((entry) => entry.id !== id))

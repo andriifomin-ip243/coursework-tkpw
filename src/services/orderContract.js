@@ -33,6 +33,11 @@ export function toOrder(value) {
   return {
     id: value.id,
     productId: value.productId,
+    ...(Array.isArray(value.items) ? { items: value.items } : {}),
+    ...(typeof value.address === 'string' ? { address: value.address } : {}),
+    ...(typeof value.deliveryType === 'string' ? { deliveryType: value.deliveryType } : {}),
+    ...(typeof value.paymentMethod === 'string' ? { paymentMethod: value.paymentMethod } : {}),
+    ...(typeof value.telegram === 'string' ? { telegram: value.telegram } : {}),
     contact: value.contact,
     quantity: value.quantity,
     giftPackaging: value.giftPackaging,

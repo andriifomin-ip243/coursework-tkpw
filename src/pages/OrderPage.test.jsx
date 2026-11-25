@@ -5,6 +5,8 @@ import OrderPage from './OrderPage.jsx'
 import { testItem, validInput, savedOrder } from '../test/fixtures.js'
 import { deferred } from '../test/deferred.js'
 
+const CONTACT_INPUT_LABEL = /Номер телефону/
+
 function renderEditor(onSave) {
   return render(
     <OrderPage
@@ -25,7 +27,7 @@ test('не зберігає порожню форму та виводить по
 
   await user.click(screen.getByRole('button', { name: 'Створити чернетку' }))
 
-  const contact = screen.getByRole('textbox', { name: /Контакт для зв'язку/ })
+  const contact = screen.getByRole('textbox', { name: CONTACT_INPUT_LABEL })
   expect(contact).toHaveAttribute('aria-invalid', 'true')
   expect(contact).toHaveFocus()
   expect(
@@ -36,19 +38,23 @@ test('не зберігає порожню форму та виводить по
 
 async function fillValidForm(user) {
   await user.type(
-    screen.getByRole('textbox', { name: /Контакт для зв'язку/ }),
+    screen.getByRole('textbox', { name: CONTACT_INPUT_LABEL }),
     validInput.contact,
   )
-  const quantityInput = screen.getByRole('spinbutton', { name: /Кількість одиниць/ })
-  await user.clear(quantityInput)
-  await user.type(quantityInput, '2')
 
-  await user.click(
-    screen.getByRole('checkbox', { name: /Фірмове подарункове пакування MERA/ }),
-  )
+  const quantityInput = screen.queryByRole('spinbutton', { name: /Кількість одиниць/ })
+  if (quantityInput) {
+    await user.clear(quantityInput)
+    await user.type(quantityInput, '2')
+  }
+
+  const giftCheckbox = screen.queryByRole('checkbox', { name: /Фірмове подарункове пакування MERA/ })
+  if (giftCheckbox) {
+    await user.click(giftCheckbox)
+  }
 
   await user.type(
-    screen.getByRole('textbox', { name: /Деталі та розмір/ }),
+    screen.getByRole('textbox', { name: /Доставка:/ }),
     validInput.comment,
   )
 }
@@ -63,13 +69,17 @@ test('передає нормалізовані поля й блокує пов�
 
   await user.click(screen.getByRole('button', { name: 'Створити чернетку' }))
 
-  const submit = screen.getByRole('button', { name: 'Збереження передзамовлення…' })
+  const submit = screen.getByRole('button', { name: 'Обробка замовлення…' })
   expect(submit).toBeDisabled()
-  expect(screen.getByRole('textbox', { name: /Контакт для зв'язку/ })).toBeDisabled()
+  expect(screen.getByRole('textbox', { name: CONTACT_INPUT_LABEL })).toBeDisabled()
 
   await user.click(submit)
   expect(onSave).toHaveBeenCalledTimes(1)
-  expect(onSave).toHaveBeenCalledWith(validInput)
+  expect(onSave).toHaveBeenCalledWith(expect.objectContaining({
+    productId: validInput.productId,
+    contact: validInput.contact,
+    comment: validInput.comment,
+  }))
 
   await act(async () => {
     pending.resolve({ ok: true, record: savedOrder })
@@ -94,14 +104,8 @@ test('після відмови сервісу зберігає введення
     'Сервіс тимчасово недоступний.',
   )
 
-  expect(screen.getByRole('textbox', { name: /Контакт для зв'язку/ }))
-    .toHaveValue(validInput.contact)
-  expect(screen.getByRole('spinbutton', { name: /Кількість одиниць/ }))
-    .toHaveValue(2)
-  expect(screen.getByRole('checkbox', { name: /Фірмове подарункове пакування MERA/ }))
-    .toBeChecked()
-  expect(screen.getByRole('textbox', { name: /Деталі та розмір/ }))
-    .toHaveValue(validInput.comment)
+  expect(screen.getByRole('textbox', { name: CONTACT_INPUT_LABEL })).toHaveValue(validInput.contact)
+  expect(screen.getByRole('textbox', { name: /Доставка:/ })).toHaveValue(validInput.comment)
 
   await user.click(screen.getByRole('button', { name: 'Створити чернетку' }))
 

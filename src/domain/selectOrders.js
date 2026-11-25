@@ -4,7 +4,21 @@ export function selectOrders(orders, items, { query, packaging, sort }) {
 
   const visibleOrders = orders.filter((order) => {
     const productName = names.get(order.productId) ?? ''
-    const text = `${productName} ${order.contact} ${order.comment}`.toLocaleLowerCase('uk')
+    const orderItemsNames = Array.isArray(order.items)
+      ? order.items.map((entry) => entry?.name || names.get(entry?.id) || '').join(' ')
+      : ''
+
+    const text = [
+      order.id ?? '',
+      productName,
+      orderItemsNames,
+      order.contact ?? '',
+      order.address ?? '',
+      order.comment ?? ''
+    ]
+      .join(' ')
+      .toLocaleLowerCase('uk')
+
     const matchesPackaging = packaging === 'all'
       || (packaging === 'gift' ? order.giftPackaging : !order.giftPackaging)
 

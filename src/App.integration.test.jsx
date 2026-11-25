@@ -48,10 +48,10 @@ function LocationProbe() {
   )
 }
 
-function renderApp(path = '/orders') {
+function renderApp(initialEntry = '/orders') {
   const user = userEvent.setup()
   render(
-    <MemoryRouter initialEntries={[path]}>
+    <MemoryRouter initialEntries={[initialEntry]}>
       <LocationProbe />
       <App />
     </MemoryRouter>,
@@ -66,14 +66,14 @@ test('показує завантаження до отримання списк
   renderApp()
 
   expect(screen.getByText('Завантаження передзамовлень MERA…')).toBeInTheDocument()
-  expect(screen.queryByText(savedOrder.comment)).not.toBeInTheDocument()
+  expect(screen.queryByText(new RegExp(savedOrder.id))).not.toBeInTheDocument()
 
   await act(async () => {
     pending.resolve([savedOrder])
     await pending.promise
   })
 
-  expect(await screen.findByText(savedOrder.comment)).toBeInTheDocument()
+  expect(await screen.findByText(new RegExp(savedOrder.id))).toBeInTheDocument()
   expect(screen.queryByText('Завантаження передзамовлень MERA…')).not.toBeInTheDocument()
 })
 
@@ -85,11 +85,11 @@ test('після відмови читання дозволяє повторно
   const user = renderApp()
 
   expect(await screen.findByRole('alert')).toHaveTextContent('Навчальна відмова читання.')
-  expect(screen.queryByText(savedOrder.comment)).not.toBeInTheDocument()
+  expect(screen.queryByText(new RegExp(savedOrder.id))).not.toBeInTheDocument()
 
   await user.click(screen.getByRole('button', { name: 'Спробувати ще раз' }))
 
-  expect(await screen.findByText(savedOrder.comment)).toBeInTheDocument()
+  expect(await screen.findByText(new RegExp(savedOrder.id))).toBeInTheDocument()
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
 })
 
@@ -111,7 +111,7 @@ test('скасування діалогу не надсилає команду �
   const user = renderApp('/orders/ord-test-001')
 
   await screen.findByRole('heading', { name: 'Заявка ord-test-001' })
-  await user.click(screen.getByRole('button', { name: 'Видалити заявку' }))
+  await user.click(screen.getByRole('button', { name: 'Скасувати замовлення' }))
 
   expect(orderService.delete).not.toHaveBeenCalled()
   expect(screen.getByRole('heading', { name: 'Заявка ord-test-001' })).toBeInTheDocument()
@@ -120,29 +120,46 @@ test('скасування діалогу не надсилає команду �
 test('створює заявку та відкриває її підтверджені деталі за новим ідентифікатором', async () => {
   orderService.getAll.mockResolvedValueOnce([])
 
-  const user = renderApp(`/orders/new?productId=${validInput.productId}`)
+  const user = renderApp({
+    pathname: '/orders/new',
+    search: `?productId=${validInput.productId}`,
+    state: {
+      cartItems: [
+        {
+          id: validInput.productId,
+          name: 'Футболка "Street Toxic: Dragon"',
+          price: 890,
+          quantity: 2,
+        },
+      ],
+    },
+  })
 
-  const contact = await screen.findByRole('textbox', { name: /Контакт для зв'язку/ })
-  await user.type(contact, validInput.contact)
-
-  const quantity = screen.getByRole('spinbutton', { name: /Кількість одиниць/ })
-  await user.clear(quantity)
-  await user.type(quantity, '2')
-
-  await user.click(
-    screen.getByRole('checkbox', { name: /Фірмове подарункове пакування MERA/ }),
+  await user.type(
+    await screen.findByLabelText(/ПІБ отримувача/),
+    'Фомін Андрій Олександрович',
   )
 
   await user.type(
-    screen.getByRole('textbox', { name: /Деталі та розмір/ }),
-    validInput.comment,
+    screen.getByLabelText(/Номер телефону/),
+    '956665555',
   )
 
-  await user.click(screen.getByRole('button', { name: 'Створити чернетку' }))
+  await user.type(
+    screen.getByLabelText(/Відділення \/ поштомат/),
+    'м. Івано-Франківськ, Відділення №1',
+  )
 
-  expect(await screen.findByRole('heading', { name: 'Заявка ord-created' })).toBeInTheDocument()
-  expect(screen.getByTestId('location')).toHaveTextContent('/orders/ord-created')
-  expect(screen.getByText(validInput.comment)).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Підтвердити передзамовлення' }))
+
   expect(orderService.create).toHaveBeenCalledTimes(1)
-  expect(orderService.create).toHaveBeenCalledWith(validInput)
+  expect(orderService.create).toHaveBeenCalledWith(
+    expect.objectContaining({
+      productId: validInput.productId,
+      contact: 'Фомін Андрій Олександрович | +380956665555',
+      address: 'м. Івано-Франківськ, Відділення №1',
+    }),
+  )
+  expect(await screen.findByText(/Мої замовлення/i)).toBeInTheDocument()
+  expect(screen.getByTestId('location')).toHaveTextContent('/orders')
 })

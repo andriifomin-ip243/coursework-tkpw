@@ -8,10 +8,18 @@ export default function useProductFilters(items) {
 
   const normalizedQuery = query.trim().toLocaleLowerCase('uk')
 
-  const visibleItems = items.filter((item) => (
-    item.name.toLocaleLowerCase('uk').includes(normalizedQuery) &&
-    (!availableOnly || item.status === 'available')
-  ))
+  const visibleItems = items.filter((item) => {
+    // Перевіряємо збіг у назві, категорії, колекції або описі
+    const matchesQuery = 
+      item.name.toLocaleLowerCase('uk').includes(normalizedQuery) ||
+      (item.category && item.category.toLocaleLowerCase('uk').includes(normalizedQuery)) ||
+      (item.collection && item.collection.toLocaleLowerCase('uk').includes(normalizedQuery)) ||
+      (item.description && item.description.toLocaleLowerCase('uk').includes(normalizedQuery))
+
+    const matchesAvailability = !availableOnly || item.status === 'available'
+
+    return matchesQuery && matchesAvailability
+  })
 
   function setQuery(value) {
     const next = new URLSearchParams(searchParams)

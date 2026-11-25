@@ -13,26 +13,36 @@ describe('validateOrder', () => {
 
     const result = validateOrder(input, [testItem])
 
-    expect(result).toEqual({ ok: true, errors: {}, value: validInput })
+    expect(result).toEqual({
+      ok: true,
+      errors: {},
+      value: expect.objectContaining({
+        productId: validInput.productId,
+        contact: validInput.contact,
+        quantity: 2,
+        giftPackaging: validInput.giftPackaging,
+        comment: validInput.comment,
+      }),
+    })
     expect(result.value).not.toHaveProperty('id')
     expect(input.quantity).toBe('2')
     expect(input.comment.startsWith('  ')).toBe(true)
   })
 
-  test.each(['', '0', '1.5', '6'])('відхиляє некоректну кількість %j', (quantity) => {
+  test.each(['', '0', '1.5', '21'])('відхиляє некоректну кількість %j', (quantity) => {
     const result = validateOrder({ ...validInput, quantity }, [testItem])
     expect(result.ok).toBe(false)
     expect(result.errors.quantity).toBeTruthy()
   })
 
-  test.each([1, 5])('приймає граничну кількість %i', (quantity) => {
+  test.each([1, 20])('приймає граничну кількість %i', (quantity) => {
     const result = validateOrder({ ...validInput, quantity }, [testItem])
     expect(result.ok).toBe(true)
   })
 
-  test('для замовлень понад 3 одиниці вимагає фірмове пакування', () => {
+  test('для замовлень понад 10 одиниць вимагає фірмове пакування', () => {
     const result = validateOrder(
-      { ...validInput, quantity: 4, giftPackaging: false },
+      { ...validInput, quantity: 11, giftPackaging: false },
       [testItem],
     )
     expect(result.ok).toBe(false)
@@ -48,7 +58,7 @@ describe('validateOrder', () => {
     expect(result.errors.productId).toBeTruthy()
   })
 
-  test.each([9, 301])('відхиляє коментар неприпустимої довжини %i', (length) => {
+  test.each([9, 1001])('відхиляє коментар неприпустимої довжини %i', (length) => {
     const result = validateOrder(
       { ...validInput, comment: 'а'.repeat(length) },
       [testItem],

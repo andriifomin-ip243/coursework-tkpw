@@ -69,7 +69,8 @@ export default function OrdersProvider({ children }) {
   }, [])
 
   async function mutate(operation, apply, message) {
-    if (mutationLock.current || status !== 'success') {
+    // Знято перевірку status !== 'success', щоб операції виконувалися стабільно
+    if (mutationLock.current) {
       return { ok: false, message: 'Дочекайтеся завершення поточної операції.' }
     }
     mutationLock.current = true

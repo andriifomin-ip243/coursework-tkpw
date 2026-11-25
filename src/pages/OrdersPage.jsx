@@ -1,114 +1,199 @@
-import { useEffect, useRef, useState, Profiler } from 'react'
-import { Link } from 'react-router'
-import PageHeading from '../components/ui/PageHeading.jsx'
+import { useState } from 'react'
+import { Link, useLocation } from 'react-router'
 import EmptyState from '../components/ui/EmptyState.jsx'
-import AppButton from '../components/ui/AppButton.jsx'
-import OrderFilters from '../components/orders/OrderFilters.jsx'
 import OrderTable from '../components/orders/OrderTable.jsx'
 import useOrders from '../hooks/useOrders.js'
 import useOrderFilters from '../hooks/useOrderFilters.js'
-import useDeleteOrder from '../hooks/useDeleteOrder.js'
-import { failNextMockOrder } from '../services/mockOrderService.js'
-
-function reportRender(id, phase, actualDuration, baseDuration) {
-  console.table([{
-    component: id,
-    phase,
-    actualMs: Number(actualDuration.toFixed(2)),
-    baseMs: Number(baseDuration.toFixed(2)),
-  }])
-}
 
 export default function OrdersPage({ items }) {
-  const { orders, reload, isMutating } = useOrders()
+  const { orders, isMutating } = useOrders()
   const filters = useOrderFilters(orders, items)
-  const deleteWithConfirmation = useDeleteOrder(items)
-  const [error, setError] = useState('')
+  const location = useLocation()
+  const highlightId = location?.state?.highlightId || null
 
-  const pageAlive = useRef(false)
+  const [activeTab, setActiveTab] = useState('all')
 
-  useEffect(() => {
-    pageAlive.current = true
-    return () => {
-      pageAlive.current = false
+  const tabFilteredOrders = filters.visibleOrders.filter(order => {
+    const status = (order.status || 'in_progress').toLowerCase()
+    if (activeTab === 'in_progress') {
+      return status === 'in_progress' || status === 'pending' || status === 'waiting'
     }
-  }, [])
-
-  async function handleDelete(order) {
-    setError('')
-    const result = await deleteWithConfirmation(order)
-    if (!pageAlive.current) return
-    if (!result.ok && !result.cancelled) {
-      setError(result.message)
+    if (activeTab === 'completed') {
+      return status === 'completed' || status === 'done' || status === 'delivered'
     }
-  }
+    return true
+  })
 
   return (
-    <div className="orders-page">
-      <PageHeading title="Передзамовлення MERA" />
+    <div className="orders-page" style={{ maxWidth: '1200px', margin: '0 auto', padding: '28px 20px' }}>
 
-      <div className="orders-top-actions">
-        <Link to="new" className="app-button app-button-primary">
-          Створити нову чернетку
-        </Link>
-        <AppButton variant="secondary" onClick={() => void reload()} disabled={isMutating}>
-          Оновити дані
-        </AppButton>
+      {/* ЕДИНА ПАНЕЛЬ КЕРУВАННЯ: Вкладки + Пошук посередині + Кнопка справа */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '24px',
+          flexWrap: 'wrap',
+          gap: '16px',
+          background: '#fff',
+          padding: '16px 20px',
+          borderRadius: '16px',
+          border: '1px solid #eaeaea',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.02)'
+        }}
+      >
 
-        {import.meta.env.DEV && import.meta.env.VITE_DATA_SOURCE === 'mock' && (
-          <AppButton
-            variant="secondary"
-            onClick={() => {
-              failNextMockOrder('getAll')
-              void reload()
+        {/* 1. Вкладки статусів зліва */}
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {[
+            { id: 'all', label: 'Усі замовлення' },
+            { id: 'in_progress', label: 'В роботі / Очікують' },
+            { id: 'completed', label: 'Виконані' }
+          ].map(tab => {
+            const isActive = activeTab === tab.id
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                style={{
+                  background: isActive ? '#7c3aed' : '#f5f3ff',
+                  color: isActive ? '#fff' : '#5b21b6',
+                  border: isActive ? '1px solid #7c3aed' : '1px solid #ddd6fe',
+                  borderRadius: '30px',
+                  padding: '9px 16px',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  boxShadow: isActive ? '0 4px 12px rgba(124, 58, 237, 0.25)' : 'none'
+                }}
+              >
+                {tab.label}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* 2. Пошуковий рядок посередині */}
+        <div style={{ flex: 1, maxWidth: '380px', minWidth: '240px' }}>
+          <input
+            type="text"
+            value={filters.query}
+            onChange={(e) => filters.setQuery(e.target.value)}
+            placeholder="Пошук передзамовлень (назва, контакт)..."
+            style={{
+              width: '100%',
+              padding: '10px 14px',
+              borderRadius: '10px',
+              border: '1px solid #ddd',
+              fontSize: '13px',
+              outline: 'none',
+              background: '#fff',
+              color: '#111',
+              boxSizing: 'border-box'
             }}
-            disabled={isMutating}
-          >
-            Імітувати відмову читання
-          </AppButton>
-        )}
-      </div>
-
-      <OrderFilters
-        query={filters.query}
-        packaging={filters.packaging}
-        sort={filters.sort}
-        onQueryChange={filters.setQuery}
-        onPackagingChange={filters.setPackaging}
-        onSortChange={filters.setSort}
-        onReset={filters.resetFilters}
-      />
-
-      <div className="orders-status-bar">
-        <p className="orders-count-info">
-          Показано заявок: <strong>{filters.visibleOrders.length}</strong> із {orders.length}
-        </p>
-        {isMutating && <p className="field-hint" role="status">Опрацювання зміни…</p>}
-      </div>
-
-      {error && <p role="alert" className="field-error">{error}</p>}
-
-      {orders.length === 0 ? (
-        <EmptyState title="У поточному сховищі ще немає збережених заявок.">
-          <p>
-            <Link to="/catalog">Відкрийте каталог та оберіть річ для замовлення</Link>
-          </p>
-        </EmptyState>
-      ) : filters.visibleOrders.length === 0 ? (
-        <EmptyState title="За цими умовами пошуку нічого не знайдено.">
-          <AppButton variant="secondary" onClick={filters.resetFilters}>
-            Скинути умови та показати всі
-          </AppButton>
-        </EmptyState>
-      ) : (
-        <Profiler id="OrderTable" onRender={reportRender}>
-          <OrderTable
-            orders={filters.visibleOrders}
-            items={items}
-            isMutating={isMutating}
-            onDelete={handleDelete}
           />
-        </Profiler>
+        </div>
+
+        {/* 3. Кнопка створення замовлення справа */}
+        <div>
+          <Link
+            to="/catalog"
+            style={{
+              textDecoration: 'none',
+              padding: '10px 18px',
+              borderRadius: '30px',
+              background: '#7c3aed',
+              color: '#fff',
+              fontWeight: 700,
+              fontSize: '13px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 4px 12px rgba(124, 58, 237, 0.25)',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            + Нове замовлення
+          </Link>
+        </div>
+      </div>
+
+      {/* КОНТЕНТ ЗАМОВЛЕНЬ */}
+      {orders.length === 0 ? (
+        <div
+          style={{
+            background: '#fff',
+            borderRadius: '16px',
+            padding: '32px 24px',
+            border: '1px solid #eaeaea',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.02)'
+          }}
+        >
+          <EmptyState title="У поточному сховищі ще немає збережених заявок.">
+            <p style={{ marginTop: '12px', marginBottom: 0 }}>
+              <Link
+                to="/catalog"
+                style={{
+                  display: 'inline-block',
+                  textDecoration: 'none',
+                  background: '#7c3aed',
+                  color: '#fff',
+                  padding: '10px 18px',
+                  borderRadius: '30px',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  boxShadow: '0 4px 12px rgba(124, 58, 237, 0.25)'
+                }}
+              >
+                Відкрити каталог та обрати річ для замовлення
+              </Link>
+            </p>
+          </EmptyState>
+        </div>
+      ) : tabFilteredOrders.length === 0 ? (
+        <div
+          style={{
+            background: '#fff',
+            borderRadius: '16px',
+            padding: '32px 24px',
+            border: '1px solid #eaeaea',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.02)'
+          }}
+        >
+          <EmptyState title="За цими умовами та обраним статусом нічого не знайдено.">
+            <div style={{ marginTop: '14px' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  filters.resetFilters()
+                  setActiveTab('all')
+                }}
+                style={{
+                  background: '#f5f3ff',
+                  color: '#7c3aed',
+                  border: '1px solid #ddd6fe',
+                  borderRadius: '30px',
+                  padding: '10px 18px',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  cursor: 'pointer'
+                }}
+              >
+                Скинути фільтри та показати всі
+              </button>
+            </div>
+          </EmptyState>
+        </div>
+      ) : (
+        <OrderTable
+          orders={tabFilteredOrders}
+          items={items}
+          isMutating={isMutating}
+          highlightId={highlightId}
+        />
       )}
     </div>
   )

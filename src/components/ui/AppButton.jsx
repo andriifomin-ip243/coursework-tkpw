@@ -4,6 +4,8 @@ export default function AppButton({
   variant = 'primary',
   disabled = false,
   onClick,
+  style,
+  className = '',
   'aria-pressed': ariaPressed,
   'aria-expanded': ariaExpanded,
   'aria-controls': ariaControls,
@@ -11,9 +13,10 @@ export default function AppButton({
   return (
     <button
       type={type}
-      className={`app-button app-button-${variant}`}
+      className={`app-button app-button-${variant} ${className}`.trim()}
       disabled={disabled}
       onClick={onClick}
+      style={style}
       aria-pressed={ariaPressed}
       aria-expanded={ariaExpanded}
       aria-controls={ariaControls}
